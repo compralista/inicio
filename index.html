@@ -4,44 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Compra Lista - Menú Principal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 0;
-        text-align: center;
+    /* --- 🎨 Mismas Variables que la Tienda --- */
+    :root {
+        --verde-fresco: #4CAF50;
+        --verde-oscuro: #2E7D32;
+        --verde-claro-bg: #E8F5E9;
+        --naranja-acento: #FF9800;
+        --texto-principal: #37474F;
+        --sombra-media: 0 5px 15px rgba(0,0,0,0.08);
+        --sombra-flotante: 0 15px 35px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.05);
+        --radio-borde: 16px;
     }
 
+    /* Reset básico */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        /* El mismo fondo degradado sutil */
+        background-color: #f4f7f6;
+        background-image: linear-gradient(to bottom, var(--verde-claro-bg) 0%, #f4f7f6 400px);
+        background-attachment: fixed;
+        text-align: center;
+        color: var(--texto-principal);
+        min-height: 100vh;
+    }
+
+    /* --- Header Estilo "El Fresquito" --- */
     header {
-        padding: 30px 0;
+        background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-fresco));
+        color: white;
+        padding: 30px 20px;
+        box-shadow: var(--sombra-media);
+        border-bottom-left-radius: 30px;
+        border-bottom-right-radius: 30px;
+        margin-bottom: 40px;
     }
 
     header img {
-        width: 180px; /* ajustá el tamaño del logo */
-        height: auto;
+        width: 100px; /* Tamaño controlado */
+        height: 100px;
+        object-fit: cover;
+        background: white;
+        border-radius: 50%; /* Redondo como en la app */
+        padding: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         margin-bottom: 15px;
+        transition: transform 0.3s;
+    }
+
+    header img:hover {
+        transform: rotate(5deg) scale(1.05);
     }
 
     h1 {
-        color: #333;
+        font-family: 'Poppins', sans-serif;
         margin: 0;
-        font-size: 28px;
+        font-size: 2rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .subtitulo {
+        opacity: 0.9;
+        margin-top: 5px;
+        font-size: 1rem;
     }
 
+    /* --- Contenedor del Menú --- */
     .menu-container {
-        max-width: 600px;
-        margin: 40px auto;
+        max-width: 500px;
+        margin: 0 auto 50px;
         background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--sombra-flotante);
+        width: 90%; /* Responsive */
     }
 
     h2 {
-        margin-bottom: 20px;
-        color: #333;
+        font-family: 'Poppins', sans-serif;
+        color: var(--verde-oscuro);
+        margin-bottom: 25px;
+        font-size: 1.5rem;
+        border-bottom: 2px solid var(--verde-claro-bg);
+        padding-bottom: 15px;
     }
 
     ul {
@@ -49,38 +101,74 @@
         padding: 0;
     }
 
+    /* --- Botones de Ciudades --- */
     ul li {
-        margin: 12px 0;
+        margin: 15px 0;
     }
 
     ul li a {
-        display: block;
-        padding: 12px;
-        background: #eaeaea;
-        border-radius: 8px;
+        display: flex;
+        justify-content: space-between; /* Para poner una flechita si quisieras */
+        align-items: center;
+        padding: 18px 25px;
+        background: white;
+        border: 2px solid var(--verde-claro-bg);
+        border-radius: 50px; /* Forma de píldora */
         text-decoration: none;
-        color: #333;
-        font-size: 18px;
-        transition: 0.3s;
+        color: var(--texto-principal);
+        font-size: 1.1rem;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: var(--sombra-media);
     }
 
+    /* Efecto Hover (Al pasar el mouse) */
     ul li a:hover {
-        background: #005bbb;
+        background: var(--verde-fresco);
+        color: white;
+        border-color: var(--verde-fresco);
+        transform: translateY(-5px); /* Se levanta un poco */
+        box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+    }
+
+    ul li a:active {
+        transform: scale(0.98);
+    }
+
+    /* Icono decorativo antes del nombre */
+    ul li a::before {
+        content: "📍";
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    /* Flecha decorativa al final */
+    ul li a::after {
+        content: "➜";
+        opacity: 0.5;
+        font-size: 0.9rem;
+        transition: 0.3s;
+    }
+    ul li a:hover::after {
+        opacity: 1;
+        transform: translateX(5px);
         color: white;
     }
+
 </style>
 </head>
 
 <body>
 
 <header>
-    <!-- Aquí va la imagen principal -->
-    <img src="img/logo.png" alt="Compra Lista">
+    <img src="https://i.postimg.cc/kXsXjRvD/logo.png" alt="Logo Compra Lista">
     <h1>Compra Lista</h1>
+    <div class="subtitulo">Selecciona tu ciudad para comenzar</div>
 </header>
 
 <div class="menu-container">
-    <h2>Ciudades</h2>
+    <h2>Ciudades Disponibles</h2>
     <ul>
         <li><a href="https://compralista.github.io/merlo/">Merlo</a></li>
         <li><a href="https://compralista.github.io/carpinteria/">Carpintería</a></li>
@@ -88,7 +176,6 @@
         <li><a href="https://compralista.github.io/cortaderas/">Cortaderas</a></li>
         <li><a href="https://compralista.github.io/villalarca/">Villa Larca</a></li>
         <li><a href="https://compralista.github.io/papagayos/">Papagayos</a></li>
-
     </ul>
 </div>
 
