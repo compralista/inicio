@@ -7,6 +7,9 @@ const urlsToCache = [
 
 // 1. Instalar y guardar los archivos iniciales
 self.addEventListener('install', event => {
+  // Obliga al Service Worker a instalarse de inmediato sin esperar a que se cierren pestañas
+  self.skipWaiting(); 
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -15,8 +18,11 @@ self.addEventListener('install', event => {
   );
 });
 
-// 2. Activar y borrar las cachés viejas (¡Esto faltaba!)
+// 2. Activar y borrar las cachés viejas
 self.addEventListener('activate', event => {
+  // Toma el control de la página inmediatamente después de activarse
+  event.waitUntil(self.clients.claim());
+
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -33,6 +39,11 @@ self.addEventListener('activate', event => {
 
 // 3. Buscar en internet primero, si falla usar caché (Network First)
 self.addEventListener('fetch', event => {
+  // CORRECCIÓN: Evitar intentar cachear peticiones POST o esquemas no soportados (ej. chrome-extension://)
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return; // Deja que la petición siga su curso normal por internet
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
