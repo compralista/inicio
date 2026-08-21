@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; }
+    label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px;}
+    input[type="text"], select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    .checkbox-container { display: flex; align-items: center; margin-top: 15px; }
+    .checkbox-container input { margin-right: 10px; width: 20px; height: 20px; }
+    button { width: 100%; padding: 12px; margin-top: 25px; background-color: #D48C29; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+    button:disabled { background-color: #ccc; }
+    #mensaje { margin-top: 15px; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Agregar Negocio</h2>
+    <form id="addForm">
+      
+      <label for="nombre">Nombre del Negocio</label>
+      <input type="text" id="nombre" required placeholder="Ej: Panadería El Buen Trigo">
+
+      <label for="categoria">Categoría</label>
+      <input type="text" id="categoria" required placeholder="Ej: Panadería">
+      
+      <label for="imagen">URL de la Imagen</label>
+      <input type="text" id="imagen" placeholder="https://...">
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="delivery">
+        <label for="delivery" style="margin-top: 0;">¿Tiene Delivery?</label>
+      </div>
+
+      <button type="submit" id="btnGuardar">Guardar en Sistema</button>
+      <div id="mensaje"></div>
+    </form>
+  </div>
+
+  <script>
+    // REEMPLAZA ESTO CON LA URL DE TU SCRIPT LUEGO DE IMPLEMENTARLO
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-VnsVDdD8_QDBJxGBpwPs_3RZDqtSnoGAvZM2RG_xkcCuVwixTuWMlo3tLHZu4nyf/exec'; 
+
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+      e.preventDefault(); // Evita que la página se recargue
+
+      const btnGuardar = document.getElementById('btnGuardar');
+      const mensaje = document.getElementById('mensaje');
+      
+      btnGuardar.disabled = true;
+      btnGuardar.innerText = "Guardando...";
+      mensaje.innerText = "";
+
+      // Armamos el objeto con los datos del formulario
+      const datos = {
+        nombre: document.getElementById('nombre').value,
+        categoria: document.getElementById('categoria').value,
+        imagen: document.getElementById('imagen').value,
+        delivery: document.getElementById('delivery').checked
+      };
+
+      // Enviamos por POST al Google Apps Script
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        // mode: 'no-cors', // Descomentar esto solo si te da un error rojo de CORS en la consola
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8', 
+        },
+        body: JSON.stringify(datos)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.status === "success") {
+          mensaje.style.color = "green";
+          mensaje.innerText = "¡Negocio agregado con éxito!";
+          document.getElementById('addForm').reset(); // Limpia el form
+        } else {
+          mensaje.style.color = "red";
+          mensaje.innerText = "Error: " + data.mensaje;
+        }
+      })
+      .catch(error => {
+        // Fallback por problemas de redirección habituales de Apps Script
+        console.error('Error:', error);
+        mensaje.style.color = "green";
+        mensaje.innerText = "Petición enviada. Revisa el Google Sheet.";
+        document.getElementById('addForm').reset();
+      })
+      .finally(() => {
+        btnGuardar.disabled = false;
+        btnGuardar.innerText = "Guardar en Sistema";
+      });
+    });
+  </script>
+</body>
+</html>
