@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Gestión | Sierras Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables Modo Claro (Mismas de tu index) */
+        :root {
+            --primary-color: #0284C7; 
+            --primary-dark: #0369A1;
+            --primary-light: rgba(2, 132, 199, 0.1);
+            --text-dark: #0F172A;
+            --text-gray: #475569;
+            --bg-light: #F8FAFC;
+            --white: #FFFFFF;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --border-color: #E2E8F0;
+            --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.4s;
+        }
+
+        /* Variables Modo Oscuro */
+        [data-theme="dark"] {
+            --text-dark: #F8FAFC;
+            --text-gray: #94A3B8;
+            --bg-light: #0F172A;
+            --white: #1E293B;
+            --nav-bg: rgba(30, 41, 59, 0.85);
+            --border-color: #334155;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            --primary-light: rgba(2, 132, 199, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-main); color: var(--text-dark); background-color: var(--bg-light); line-height: 1.7; transition: background-color var(--transition-speed), color var(--transition-speed); }
+        .container { width: 90%; max-width: 800px; margin: 0 auto; }
+
+        /* Navegación */
+        .navbar { position: fixed; width: 100%; top: 0; background-color: var(--nav-bg); backdrop-filter: blur(12px); z-index: 1000; border-bottom: 1px solid var(--border-color); }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 80px; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; }
+        .logo span { color: var(--primary-color); }
+
+        /* Theme Toggle */
+        .theme-toggle { background: var(--bg-light); border: 1px solid var(--border-color); cursor: pointer; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .moon-icon { opacity: 1; transform: translateY(0) rotate(0deg); color: var(--text-gray); }
+        .sun-icon { opacity: 0; transform: translateY(30px) rotate(45deg); color: #F59E0B; }
+        [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
+        [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
+
+        /* Diseño del Panel */
+        main { padding: 120px 0 60px; }
+        .admin-card { background: var(--white); padding: 40px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); transition: all var(--transition-speed); }
+        .admin-header { text-align: center; margin-bottom: 30px; }
+        .admin-header h2 { font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
+        .admin-header p { color: var(--text-gray); }
+
+        /* Formularios */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); font-size: 0.95rem; }
+        input[type="text"], select { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); 
+            background: var(--bg-light); color: var(--text-dark); font-family: var(--font-main); 
+            font-size: 1rem; transition: all 0.3s; 
+        }
+        input[type="text"]:focus, select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
+        
+        .section-title { font-size: 1.2rem; font-weight: 800; color: var(--primary-color); margin: 30px 0 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .checkbox-wrapper { display: flex; align-items: center; gap: 12px; background: var(--bg-light); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; }
+        .checkbox-wrapper input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary-color); cursor: pointer; }
+        .checkbox-wrapper label { margin: 0; cursor: pointer; font-size: 1rem; }
+
+        /* Botón Guardar */
+        .btn-primary { 
+            display: flex; width: 100%; align-items: center; justify-content: center; gap: 10px;
+            padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 600;
+            background-color: var(--primary-color); color: #fff; border: none; cursor: pointer;
+            box-shadow: 0 10px 20px -10px rgba(2, 132, 199, 0.5); transition: all 0.3s; margin-top: 30px;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -10px rgba(2, 132, 199, 0.6); background-color: var(--primary-dark); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .selector-destacado { background: var(--primary-light) !important; border-color: var(--primary-color) !important; font-weight: 600; }
+        #msg { text-align: center; margin-top: 20px; font-weight: 600; padding: 15px; border-radius: 12px; display: none; }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .admin-card { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">Sierras<span>Web</span></a>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            <div class="admin-card">
+                <div class="admin-header">
+                    <h2>Panel de Comercios</h2>
+                    <p>Administra la base de datos conectada a Google Sheets</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Buscar o Seleccionar Comercio:</label>
+                    <select id="selector" class="selector-destacado" onchange="cargarDatosFormulario()">
+                        <option value="NUEVO">✨ -- AGREGAR NUEVO COMERCIO --</option>
+                    </select>
+                </div>
+
+                <form id="adminForm">
+                    <!-- Campo Oculto Crucial para actualizar -->
+                    <input type="hidden" id="nombreOriginal">
+
+                    <div class="section-title">Información Principal</div>
+                    <div class="form-group">
+                        <label>Nombre del Comercio</label>
+                        <input type="text" id="nombre" required placeholder="Ej: El Fresquito">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Rubro</label>
+                            <input type="text" id="rubro" placeholder="Ej: Verdulería">
+                        </div>
+                        <div class="form-group">
+                            <label>Domicilio</label>
+                            <input type="text" id="domicilio" placeholder="Ej: Av. del Sol 123">
+                        </div>
+                    </div>
+
+                    <div class="section-title">Horarios de Atención</div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Lunes</label><input type="text" id="lunes" placeholder="8-13, 17-21"></div>
+                        <div class="form-group"><label>Martes</label><input type="text" id="martes" placeholder="8-13, 17-21"></div>
+                        <div class="form-group"><label>Miércoles</label><input type="text" id="miercoles" placeholder="8-13, 17-21"></div>
+                        <div class="form-group"><label>Jueves</label><input type="text" id="jueves" placeholder="8-13, 17-21"></div>
+                        <div class="form-group"><label>Viernes</label><input type="text" id="viernes" placeholder="8-13, 17-21"></div>
+                        <div class="form-group"><label>Sábado</label><input type="text" id="sabado" placeholder="9-14"></div>
+                        <div class="form-group"><label>Domingo</label><input type="text" id="domingo" placeholder="Cerrado"></div>
+                    </div>
+
+                    <div class="section-title">Delivery y Pagos</div>
+                    <div class="form-group checkbox-wrapper" onclick="document.getElementById('delivery').click()">
+                        <input type="checkbox" id="delivery" onclick="event.stopPropagation()">
+                        <label for="delivery">El comercio cuenta con Delivery</label>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Costo Delivery</label>
+                            <input type="text" id="costoDelivery" placeholder="Ej: 0 o 500">
+                        </div>
+                        <div class="form-group">
+                            <label>Horario Delivery</label>
+                            <input type="text" id="horarioDelivery" placeholder="Ej: 19:00 a 23:00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Formas de Pago</label>
+                        <input type="text" id="formasPago" placeholder="Ej: Efectivo, Transferencia, MercadoPago">
+                    </div>
+
+                    <div class="section-title">Multimedia y Enlaces</div>
+                    <div class="form-group">
+                        <label>Banner Promocional / Etiqueta</label>
+                        <input type="text" id="banner" placeholder="Ej: HOY Abierto por la tarde">
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>URL del Logo</label>
+                            <input type="text" id="logoUrl" placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label>URL de la Web o Menú</label>
+                            <input type="text" id="url" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnGuardar" class="btn-primary">
+                        Guardar Cambios en Sheets
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                    <div id="msg"></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Lógica de Modo Oscuro
+        const htmlElement = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            htmlElement.setAttribute('data-theme', 'dark');
+        }
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // --- LÓGICA DEL FORMULARIO ---
+        // REEMPLAZAR CON TU URL DE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/AKfycbz8R-kPy65sB9u2QUaGoPreuCyyrnrwlGDn4bsrd5QCbApGGpN_38WH-V3VG_75ns2ePw/exec'; 
+        let listaComercios = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(data => {
+                    listaComercios = data;
+                    
+                    // ORDENAR ALFABÉTICAMENTE PARA ENCONTRAR FÁCILMENTE
+                    let comerciosOrdenados = data.map((item, index) => {
+                        return { index: index, nombre: item["Nombre"] || `Comercio Sin Nombre #${index}` };
+                    }).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                    const selector = document.getElementById('selector');
+                    comerciosOrdenados.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.index;
+                        opt.textContent = c.nombre;
+                        selector.appendChild(opt);
+                    });
+                })
+                .catch(err => console.error('Error al cargar comercios:', err));
+        });
+
+        function cargarDatosFormulario() {
+            const idx = document.getElementById('selector').value;
+            const form = document.getElementById('adminForm');
+
+            if (idx === "NUEVO") {
+                form.reset();
+                document.getElementById('nombreOriginal').value = "";
+                return;
+            }
+
+            const c = listaComercios[idx];
+            // Guarda el nombre exacto como viene del Sheet
+            document.getElementById('nombreOriginal').value = c["Nombre"] || "";
+            document.getElementById('nombre').value = c["Nombre"] || "";
+            document.getElementById('rubro').value = c["Rubro"] || "";
+            document.getElementById('domicilio').value = c["Domicilio"] || "";
+            document.getElementById('lunes').value = c["Lunes"] || "";
+            document.getElementById('martes').value = c["Martes"] || "";
+            document.getElementById('miercoles').value = c["Miércoles"] || "";
+            document.getElementById('jueves').value = c["Jueves"] || "";
+            document.getElementById('viernes').value = c["Viernes"] || "";
+            document.getElementById('sabado').value = c["Sábado"] || "";
+            document.getElementById('domingo').value = c["Domingo"] || "";
+            document.getElementById('delivery').checked = Boolean(c["Delivery"]);
+            document.getElementById('formasPago').value = c["Formas de pago"] || "";
+            document.getElementById('logoUrl').value = c["Logo URL"] || "";
+            document.getElementById('url').value = c["URL"] || "";
+            document.getElementById('banner').value = c["Banner"] || "";
+            document.getElementById('costoDelivery').value = c["Costo Delivery"] || "";
+            document.getElementById('horarioDelivery').value = c["Horario Delivery"] || "";
+        }
+
+        document.getElementById('adminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGuardar');
+            const msg = document.getElementById('msg');
+            
+            btn.disabled = true;
+            btn.innerHTML = 'Guardando... <svg width="20" height="20" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="15" stroke-dashoffset="15" d="M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></svg>';
+            msg.style.display = "none";
+
+            const payload = {
+                nombreOriginal: document.getElementById('nombreOriginal').value,
+                nombre: document.getElementById('nombre').value,
+                rubro: document.getElementById('rubro').value,
+                domicilio: document.getElementById('domicilio').value,
+                lunes: document.getElementById('lunes').value,
+                martes: document.getElementById('martes').value,
+                miercoles: document.getElementById('miercoles').value,
+                jueves: document.getElementById('jueves').value,
+                viernes: document.getElementById('viernes').value,
+                sabado: document.getElementById('sabado').value,
+                domingo: document.getElementById('domingo').value,
+                delivery: document.getElementById('delivery').checked,
+                formasPago: document.getElementById('formasPago').value,
+                logoUrl: document.getElementById('logoUrl').value,
+                url: document.getElementById('url').value,
+                banner: document.getElementById('banner').value,
+                costoDelivery: document.getElementById('costoDelivery').value,
+                horarioDelivery: document.getElementById('horarioDelivery').value
+            };
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                msg.style.display = "block";
+                if(res.status === "success") {
+                    msg.style.backgroundColor = "rgba(37, 211, 102, 0.1)";
+                    msg.style.color = "#16a34a";
+                    msg.innerText = "¡Comercio guardado exitosamente!";
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    msg.style.backgroundColor = "rgba(220, 38, 38, 0.1)";
+                    msg.style.color = "#dc2626";
+                    msg.innerText = "Error al guardar: " + res.message;
+                }
+            })
+            .catch(() => {
+                msg.style.display = "block";
+                msg.style.backgroundColor = "rgba(37, 211, 102, 0.1)";
+                msg.style.color = "#16a34a";
+                msg.innerText = "Cambios enviados a la planilla.";
+                setTimeout(() => location.reload(), 1500);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = 'Guardar Cambios en Sheets <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            });
+        });
+    </script>
+</body>
+</html>
