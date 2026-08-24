@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* Variables Modo Claro (Idénticas a tu Landing) */
+        /* Variables Modo Claro */
         :root {
             --primary-color: #0284C7; 
             --primary-dark: #0369A1;
@@ -20,10 +20,9 @@
             --border-color: #E2E8F0;
             --pattern-color: #cbd5e1;
             --font-main: 'Inter', sans-serif;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            --transition-speed: 0.4s;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
         }
 
         /* Variables Modo Oscuro */
@@ -35,9 +34,8 @@
             --nav-bg: rgba(30, 41, 59, 0.85);
             --border-color: #334155;
             --pattern-color: #334155;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
             --primary-light: rgba(2, 132, 199, 0.2);
         }
 
@@ -47,12 +45,13 @@
         body { 
             font-family: var(--font-main); 
             color: var(--text-dark); 
-            background-color: var(--white); 
-            line-height: 1.7; 
+            background-color: var(--bg-light); /* Fondo un poco más gris para resaltar tarjetas */
+            line-height: 1.5; 
             transition: background-color var(--transition-speed), color var(--transition-speed); 
         }
         
-        .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+        /* Contenedor más angosto para que parezca app */
+        .container { width: 92%; max-width: 800px; margin: 0 auto; }
 
         /* --- Navegación Efecto Cristal --- */
         .navbar {
@@ -61,76 +60,88 @@
             z-index: 1000; border-bottom: 1px solid var(--border-color); 
             transition: all var(--transition-speed);
         }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 80px; }
-        .logo { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; }
         .logo span { color: var(--primary-color); }
         
         /* Botón Theme Toggle Animado */
         .theme-toggle {
-            background: var(--bg-light); border: 1px solid var(--border-color); cursor: pointer;
-            width: 42px; height: 42px; border-radius: 50%; transition: all 0.3s ease;
+            background: transparent; border: 1px solid var(--border-color); cursor: pointer;
+            width: 38px; height: 38px; border-radius: 50%; transition: all 0.3s ease;
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
         }
-        .theme-toggle:hover { background-color: var(--border-color); box-shadow: var(--shadow-sm); }
-        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .theme-toggle:hover { background-color: var(--border-color); }
+        .theme-toggle svg { position: absolute; width: 18px; height: 18px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .moon-icon { opacity: 1; transform: translateY(0) rotate(0deg); color: var(--text-gray); }
         .sun-icon { opacity: 0; transform: translateY(30px) rotate(45deg); color: #F59E0B; }
         [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
         [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
 
-        /* --- Hero Header del Menú --- */
+        /* --- Hero Header del Menú (Más compacto) --- */
         .hero {
-            padding: 160px 0 80px; background-color: var(--bg-light);
-            background-image: radial-gradient(var(--pattern-color) 1.5px, transparent 1.5px);
-            background-size: 35px 35px; text-align: center;
-            transition: background-color var(--transition-speed);
+            padding: 100px 0 30px; 
+            text-align: center;
         }
-        .hero-badge {
-            display: inline-block; background-color: var(--primary-light); color: var(--primary-color);
-            padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px;
-            border: 1px solid rgba(2, 132, 199, 0.2);
-        }
-        .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 15px; letter-spacing: -1px; }
-        .hero p { font-size: 1.15rem; color: var(--text-gray); max-width: 600px; margin: 0 auto; }
+        .hero h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .hero p { font-size: 0.95rem; color: var(--text-gray); }
 
-        /* --- Cuadrícula de Herramientas (Cards) --- */
-        .section { padding: 80px 0; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; }
-        
-        .tool-card { 
-            background: var(--white); padding: 35px; border-radius: 20px; 
-            border: 1px solid var(--border-color); transition: all 0.4s ease; 
-            display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+        /* --- Lista de Menús (Formato App) --- */
+        .section { padding: 10px 0 60px; }
+        .menu-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
         }
-        .tool-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--primary-color); }
         
-        .tool-icon { 
-            width: 60px; height: 60px; background-color: var(--primary-light); color: var(--primary-color); 
-            border-radius: 14px; display: flex; align-items: center; justify-content: center; 
-            font-size: 1.8rem; margin-bottom: 20px; transition: transform 0.3s;
+        .menu-item { 
+            background: var(--white); 
+            padding: 16px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            display: flex; 
+            align-items: center; 
+            text-decoration: none;
+            box-shadow: var(--shadow-sm); 
+            transition: all 0.2s ease;
         }
-        .tool-card:hover .tool-icon { transform: scale(1.1) rotate(5deg); }
         
-        .tool-content h3 { font-size: 1.4rem; margin-bottom: 10px; color: var(--text-dark); }
-        .tool-content p { color: var(--text-gray); font-size: 0.95rem; margin-bottom: 25px; }
-        
-        .tool-link { 
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 12px 20px; background-color: var(--primary-color); color: #fff; 
-            border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 0.95rem;
-            transition: all 0.3s; box-shadow: var(--shadow-sm);
+        .menu-item:hover, .menu-item:active { 
+            transform: translateY(-2px); 
+            box-shadow: var(--shadow-md); 
+            border-color: var(--primary-color); 
         }
-        .tool-link:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        
+        .menu-icon { 
+            width: 46px; height: 46px; 
+            background-color: var(--primary-light); 
+            border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.4rem; 
+            margin-right: 16px; 
+            flex-shrink: 0;
+        }
+        
+        .menu-content { flex: 1; }
+        .menu-content h3 { font-size: 1.05rem; margin-bottom: 2px; color: var(--text-dark); font-weight: 600; }
+        .menu-content p { color: var(--text-gray); font-size: 0.85rem; margin: 0; line-height: 1.3; }
+        
+        .menu-arrow { 
+            color: var(--text-gray); 
+            font-size: 1.2rem; 
+            margin-left: 10px;
+            opacity: 0.5;
+            transition: transform 0.2s;
+        }
+        .menu-item:hover .menu-arrow { 
+            transform: translateX(4px); 
+            color: var(--primary-color);
+            opacity: 1;
+        }
 
         /* --- Footer --- */
-        footer { padding: 40px 0; text-align: center; color: var(--text-gray); background-color: var(--bg-light); border-top: 1px solid var(--border-color); }
+        footer { padding: 30px 0; text-align: center; color: var(--text-gray); font-size: 0.85rem; }
 
-        @media (max-width: 768px) {
-            .hero { padding: 130px 0 60px; }
-            .hero h1 { font-size: 2.2rem; }
-        }
     </style>
 </head>
 <body>
@@ -151,63 +162,54 @@
 
     <header class="hero">
         <div class="container">
-            <div class="hero-badge">🛠️ Panel de Control General</div>
-            <h1>Tus Herramientas y Sistemas</h1>
-            <p>Acceso rápido a todos tus paneles de administración, catálogos y plataformas conectadas.</p>
+            <h1>Panel de Control</h1>
+            <p>Acceso rápido a tus sistemas y catálogos.</p>
         </div>
     </header>
 
     <main class="section">
         <div class="container">
-            <div class="tools-grid">
+            <div class="menu-list">
                 
-                <!-- Herramienta 1: Panel de Comercios (El que acabamos de hacer) -->
-                <div class="tool-card">
-                    <div>
-                        <div class="tool-icon">📊</div>
-                        <div class="tool-content">
-                            <h3>Gestor de Comercios Carpintería</h3>
-                            <p>Panel para agregar, buscar y editar los datos de los comercios conectados a tu base de Google Sheets.</p>
-                        </div>
+                <!-- Ítem 1 -->
+                <a href="panelcarpinteria.html" class="menu-item">
+                    <div class="menu-icon">📊</div>
+                    <div class="menu-content">
+                        <h3>Gestor Carpintería</h3>
+                        <p>Base de datos de comercios</p>
                     </div>
-                    <a href="panelcarpinteria.html" class="tool-link">Abrir Panel <span>&rarr;</span></a>
-                </div>
+                    <div class="menu-arrow">&rarr;</div>
+                </a>
 
-                <!-- Herramienta 2: Tienda / Catálogo GitHub (Ejemplo) -->
-                <div class="tool-card">
-                    <div>
-                        <div class="tool-icon">🛒</div>
-                        <div class="tool-content">
-                            <h3>VENTAS TOTALES</h3>
-                            <p>Visualización de tolas las ventas de los negocios.</p>
-                        </div>
+                <!-- Ítem 2 -->
+                <a href="ventastotales.html" class="menu-item">
+                    <div class="menu-icon">🛒</div>
+                    <div class="menu-content">
+                        <h3>Ventas Totales</h3>
+                        <p>Métricas y auditoría de caja</p>
                     </div>
-                    <a href="ventastotales.html" class="tool-link">Abrir Panel <span>&rarr;</span></a>
-                </div>
+                    <div class="menu-arrow">&rarr;</div>
+                </a>
 
-                <!-- Herramienta 3: Carpintería / Proyecto Github -->
-                <div class="tool-card">
-                    <div>
-                        <div class="tool-icon">🪵</div>
-                        <div class="tool-content">
-                            <h3>Proyecto Carpintería</h3>
-                            <p>Repositorio de desarrollo web y tienda específica orientada a carpintería y afines.</p>
-                        </div>
+                <!-- Ítem 3 -->
+                <a href="https://compralista.github.io/carpinteria/" class="menu-item" target="_blank">
+                    <div class="menu-icon">🪵</div>
+                    <div class="menu-content">
+                        <h3>Proyecto Carpintería</h3>
+                        <p>Ver tienda en vivo</p>
                     </div>
-                    <a href="https://compralista.github.io/carpinteria/" class="tool-link" target="_blank">Ver Proyecto <span>&rarr;</span></a>
-                </div>
+                    <div class="menu-arrow">&rarr;</div>
+                </a>
 
-                <!-- Herramienta 4: Sitio Web Principal -->
-                <div class="tool-card">
-                    <div>
-                        <div class="tool-icon">🌐</div>
-                        <div class="tool-content">
-                            <h3>Sierras Web (Landing)</h3>
-                            <p>Página web principal de presentación de servicios, planes, precios y demos de clientes.</p>
-                        </div>
+                <!-- Ítem 4 -->
+                <a href="https://www.sierrasweb.com.ar/" class="menu-item" target="_blank">
+                    <div class="menu-icon">🌐</div>
+                    <div class="menu-content">
+                        <h3>Sitio Principal</h3>
+                        <p>Landing page Sierras Web</p>
                     </div>
-                    <a href="https://www.sierrasweb.com.ar/" class="tool-link" target="_blank">Ver Web Oficial <span>&rarr;</span></a>
-                </div>
+                    <div class="menu-arrow">&rarr;</div>
+                </a>
 
             </div>
         </div>
@@ -215,7 +217,7 @@
 
     <footer>
         <div class="container">
-            <p>Sierras Web - Villa de Merlo, San Luis, Argentina.</p>
+            <p>Sierras Web - Villa de Merlo, San Luis</p>
         </div>
     </footer>
 
