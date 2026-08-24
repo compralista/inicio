@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierras Web | Portal de Administración</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables Sierras Web */
+        :root {
+            --primary-color: #0284C7; --primary-dark: #0369A1; --primary-light: rgba(2, 132, 199, 0.1);
+            --text-dark: #0F172A; --text-gray: #475569; --bg-light: #F8FAFC; --white: #FFFFFF;
+            --border-color: #E2E8F0; --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --transition-speed: 0.4s;
+        }
+
+        [data-theme="dark"] {
+            --text-dark: #F8FAFC; --text-gray: #94A3B8; --bg-light: #0F172A; --white: #1E293B;
+            --border-color: #334155; --primary-light: rgba(2, 132, 199, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-main); color: var(--text-dark); background-color: var(--bg-light); display: flex; height: 100vh; transition: background-color var(--transition-speed), color var(--transition-speed); }
+
+        /* Sidebar Styling */
+        .sidebar { width: 300px; background-color: var(--white); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 25px 20px; transition: all var(--transition-speed); z-index: 10; box-shadow: var(--shadow-sm); }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-decoration: none; margin-bottom: 30px; display: block; letter-spacing: -0.5px;}
+        .logo span { color: var(--primary-color); }
+
+        /* Buscador Selects */
+        .search-box { background: var(--bg-light); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .search-box label { display: block; font-size: 0.85rem; font-weight: 800; color: var(--text-gray); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--white); color: var(--text-dark); font-family: var(--font-main); font-size: 0.95rem; outline: none; margin-bottom: 20px; cursor: pointer; transition: all 0.3s; }
+        .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px var(--primary-light); }
+        .form-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Theme Toggle */
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .theme-toggle { background: var(--bg-light); border: 1px solid var(--border-color); cursor: pointer; width: 42px; height: 42px; border-radius: 50%; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .theme-toggle:hover { background-color: var(--border-color); box-shadow: var(--shadow-sm); }
+        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .moon-icon { opacity: 1; transform: translateY(0) rotate(0deg); color: var(--text-gray); }
+        .sun-icon { opacity: 0; transform: translateY(30px) rotate(45deg); color: #F59E0B; }
+        [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
+        [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
+
+        /* Main Content */
+        .visor-container { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; }
+        .iframe-wrapper { flex-grow: 1; background: var(--white); border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-md); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+        .placeholder-text { color: var(--text-gray); font-size: 1.1rem; font-weight: 500; position: absolute; z-index: 0; pointer-events: none;}
+        iframe { width: 100%; height: 100%; border: none; background: transparent; z-index: 1; position: relative; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <a href="#" class="logo">Sierras<span>Admin</span></a>
+        
+        <div class="search-box">
+            <label>1. Localidad</label>
+            <select id="selLocalidad" class="form-select" onchange="filtrarNegocios()">
+                <option value="">Seleccione...</option>
+            </select>
+            
+            <label style="margin-bottom: 8px;">2. Negocio</label>
+            <select id="selNegocio" class="form-select" style="margin-bottom: 0;" disabled onchange="cargarIframe()">
+                <option value="">Esperando localidad...</option>
+            </select>
+        </div>
+
+        <div class="sidebar-footer">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-gray);">Apariencia</span>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+        </div>
+    </aside>
+
+    <main class="visor-container">
+        <div class="iframe-wrapper">
+            <div class="placeholder-text" id="placeholder">Seleccione un negocio para comenzar</div>
+            <iframe id="pantallaIframe" name="pantalla" src="about:blank"></iframe>
+        </div>
+    </main>
+
+    <script>
+        // DIRECTORIO CENTRAL - Aquí configuras todos tus negocios
+        const directorio = [
+            { localidad: "Capital", nombre: "El Fresquito", url: "URL_DEL_SCRIPT_DEL_FRESQUITO" },
+            { localidad: "Zona Sur", nombre: "Ferretería Central", url: "URL_DEL_SCRIPT_FERRETERIA" },
+            { localidad: "Zona Sur", nombre: "Panadería La Dulce", url: "URL_DEL_SCRIPT_PANADERIA" },
+            { localidad: "La Punta", nombre: "Mercadito San José", url: "URL_DEL_SCRIPT_MERCADITO" }
+        ];
+
+        // Lógica de los selects
+        window.onload = function() {
+            const localidades = [...new Set(directorio.map(item => item.localidad))].sort();
+            const selLocalidad = document.getElementById('selLocalidad');
+            
+            localidades.forEach(loc => {
+                let option = document.createElement('option');
+                option.value = loc;
+                option.text = loc;
+                selLocalidad.appendChild(option);
+            });
+        };
+
+        function filtrarNegocios() {
+            const loc = document.getElementById('selLocalidad').value;
+            const selNegocio = document.getElementById('selNegocio');
+            
+            selNegocio.innerHTML = '<option value="">Seleccione el negocio...</option>';
+            
+            if (loc === "") {
+                selNegocio.disabled = true;
+                selNegocio.innerHTML = '<option value="">Esperando localidad...</option>';
+                return;
+            }
+
+            selNegocio.disabled = false;
+            const negociosFiltrados = directorio.filter(item => item.localidad === loc).sort((a, b) => a.nombre.localeCompare(b.nombre));
+            
+            negociosFiltrados.forEach(negocio => {
+                let option = document.createElement('option');
+                option.value = negocio.url;
+                option.text = negocio.nombre;
+                selNegocio.appendChild(option);
+            });
+        }
+
+        function cargarIframe() {
+            const url = document.getElementById('selNegocio').value;
+            const iframe = document.getElementById('pantallaIframe');
+            const placeholder = document.getElementById('placeholder');
+
+            if(url) {
+                placeholder.style.display = 'none';
+                iframe.src = url;
+            } else {
+                placeholder.style.display = 'block';
+                iframe.src = 'about:blank';
+            }
+        }
+
+        // Lógica Modo Oscuro
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) { htmlElement.setAttribute('data-theme', 'dark'); }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            if (newTheme === 'light') htmlElement.removeAttribute('data-theme');
+            else htmlElement.setAttribute('data-theme', 'dark');
+            
+            localStorage.setItem('theme', newTheme);
+            
+            // Avisar al iframe para que también cambie de color (si está cargado)
+            window.frames['pantalla'].postMessage(newTheme, '*');
+        });
+    </script>
+</body>
+</html>
