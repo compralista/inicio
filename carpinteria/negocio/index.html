@@ -846,10 +846,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 📌 BLOQUEO DE BOTONES SI EL LOCAL ESTÁ CERRADO
+            // 📌 BLOQUEO DE BOTONES SI EL LOCAL ESTÁ CERRADO O NO HAY STOCK
             let controlBotonHTML = '';
+            
+            // Verificamos si el stock es exactamente 0 en tu Google Sheet
+            const sinStock = (p.stock === 0 || p.stock === '0');
+
             if (!negocioAbierto) {
                 controlBotonHTML = `
                     <button class="btn-agregar" disabled style="opacity:0.6; cursor:not-allowed;">CERRADO</button>
+                `;
+            } else if (sinStock) {
+                controlBotonHTML = `
+                    <button class="btn-agregar" disabled style="background: var(--bg-light); border-color: var(--border-color); color: var(--rojo-cerrado); cursor:not-allowed;">SIN STOCK</button>
                 `;
             } else if (cantidadActual > 0) {
                 controlBotonHTML = `
