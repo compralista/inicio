@@ -72,9 +72,11 @@
             width: 90%; max-width: 1280px; margin: 0 auto;
             display: flex; justify-content: space-between; align-items: center; height: 75px; 
         }
-        .logo { font-size: 1.6rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; transition: transform 0.3s; }
+        
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; transition: transform 0.3s; display: flex; align-items: center; gap: 10px; }
         .logo:hover { transform: scale(1.03); }
         .logo span { color: var(--primary-color); }
+        .logo img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
 
         .nav-right { display: flex; align-items: center; gap: 15px; }
 
@@ -237,7 +239,7 @@
             background: transparent;
         }
 
-        .logo { 
+        .card-logo { 
             width: 60px; 
             height: 60px; 
             border-radius: 50%; 
@@ -485,7 +487,10 @@
 <!-- NAVBAR EFECTO CRISTAL -->
 <nav class="navbar" id="navbar">
     <div class="nav-container">
-        <a href="#" class="logo">Compra<span>Lista</span></a>
+        <a href="#" class="logo">
+            <img src="https://i.postimg.cc/kXsXjRvD/logo.png" alt="Icono">
+            Compra<span>Lista</span>
+        </a>
         <div class="nav-right">
             <!-- BOTÓN MODO OSCURO / CLARO -->
             <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
@@ -805,7 +810,7 @@ async function cargarNegocios() {
                 </button>
 
                 <div class="card-header">
-                    <img src="${n["Logo URL"]}" alt="Logo" class="logo">
+                    <img src="${n["Logo URL"]}" alt="Logo" class="card-logo">
                     <div class="info-principal">
                         <h2>${n.Nombre}</h2>
                         <span class="rubro">${n.Rubro}</span>
@@ -835,7 +840,7 @@ async function cargarNegocios() {
                 </div>
             `;
 
-            cargarLogo(card.querySelector('.logo'));
+            cargarLogo(card.querySelector('.card-logo'));
             
             card.addEventListener('click', ()=> window.open(n.URL,'_blank'));
             
