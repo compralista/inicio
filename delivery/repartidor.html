@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierras Web | App Repartidor</title>
+    
+    <!-- Fuente oficial de Sierras Web -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables de diseño Sierras Web */
+        :root {
+            --primary: #0284C7;
+            --bg-light: #F8FAFC;
+            --white: #FFFFFF;
+            --text-dark: #0F172A;
+            --text-gray: #475569;
+            --border: #E2E8F0;
+            --success: #10B981; /* Verde más moderno */
+            --danger: #EF4444;  /* Rojo más vibrante */
+            --dark: #334155;    /* Gris oscuro elegante */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+
+        /* Branding Sierras Web */
+        .logo { 
+            font-size: 2rem; 
+            font-weight: 800; 
+            color: var(--text-dark); 
+            text-decoration: none; 
+            margin-bottom: 30px; 
+            letter-spacing: -0.5px; 
+        }
+        .logo span { color: var(--primary); }
+
+        /* Tarjeta Principal */
+        .card { 
+            background: var(--white); 
+            padding: 40px 30px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); 
+            width: 100%; 
+            max-width: 380px; 
+            text-align: center; 
+            border: 1px solid var(--border); 
+        }
+        .card h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); }
+        .card p { color: var(--text-gray); font-size: 0.95rem; margin-bottom: 25px; }
+
+        /* Input del ID */
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 25px;
+            font-size: 1.2rem; 
+            font-weight: 600; 
+            text-align: center; 
+            border: 2px solid var(--border); 
+            border-radius: 14px; 
+            text-transform: uppercase; 
+            color: var(--text-dark); 
+            outline: none; 
+            transition: all 0.3s; 
+            background: var(--bg-light); 
+        }
+        input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1); 
+            background: var(--white); 
+        }
+        input::placeholder { color: #94A3B8; font-weight: 400; }
+
+        /* Botones de Estado */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 12px; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            border: none; 
+            border-radius: 14px; 
+            cursor: pointer; 
+            color: white; 
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+        .btn:active { transform: scale(0.96); }
+        
+        .btn-disp { background: var(--success); }
+        .btn-disp:hover { background: #059669; }
+        
+        .btn-ocup { background: var(--danger); }
+        .btn-ocup:hover { background: #DC2626; }
+        
+        .btn-off { background: var(--dark); }
+        .btn-off:hover { background: #1E293B; }
+
+        /* Estado de Conexión */
+        #status { 
+            margin-top: 25px; 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+            color: var(--text-gray); 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 6px; 
+            padding: 8px 16px; 
+            background: var(--bg-light); 
+            border-radius: 20px; 
+            border: 1px solid var(--border); 
+            transition: all 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="#" class="logo">Sierras<span>Web</span></a>
+
+    <div class="card">
+        <h2>🛵 Tablero de Reparto</h2>
+        <p>Ingresá tus iniciales para conectarte</p>
+        
+        <input type="text" id="idRepartidor" placeholder="EJ: CM, NA" maxlength="3">
+
+        <button class="btn btn-disp" onclick="enviarEstado('disponible')">🟢 Estoy Disponible</button>
+        <button class="btn btn-ocup" onclick="enviarEstado('ocupado')">🔴 En Viaje (Ocupado)</button>
+        <button class="btn btn-off" onclick="enviarEstado('no_trabajando')">⚫ Finalizar Turno</button>
+        
+        <div id="status">⏳ Conectando al servidor...</div>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // --- TUS DATOS DE HIVEMQ ---
+        const host = 'wss://6b1996ce3cb642b4b4291767de85d454.s1.eu.hivemq.cloud:8884/mqtt';
+        const opciones = {
+            username: 'sierraswebdelivery',
+            password: 'NestorArias1070',
+            clientId: 'botonera_' + Math.random().toString(16).substr(2, 8)
+        };
+
+        const client = mqtt.connect(host, opciones);
+        const statusDiv = document.getElementById('status');
+
+        client.on('connect', () => {
+            statusDiv.innerHTML = "✅ Sistema en línea";
+            statusDiv.style.color = "var(--success)";
+            statusDiv.style.borderColor = "var(--success)";
+        });
+
+        // Recuperar el ID guardado
+        const inputId = document.getElementById('idRepartidor');
+        inputId.value = localStorage.getItem('mi_id') || "";
+
+        function enviarEstado(estado) {
+            const id = inputId.value.trim().toUpperCase();
+            if (!id) { 
+                alert("⚠️ Por favor, ingresá tu ID primero."); 
+                inputId.focus();
+                return; 
+            }
+            
+            // Guardar en el celular
+            localStorage.setItem('mi_id', id);
+
+            // Armar el mensaje y enviarlo a HiveMQ
+            const mensaje = JSON.stringify({ estado: estado, timestamp: Date.now() });
+            const tema = `sierrasweb/estado/${id}`;
+            
+            client.publish(tema, mensaje, { retain: true }); 
+            
+            // Feedback visual agradable
+            statusDiv.innerHTML = `📡 Estado: <b>${estado.toUpperCase()}</b>`;
+            statusDiv.style.color = "var(--primary)";
+            statusDiv.style.borderColor = "var(--primary)";
+            statusDiv.style.backgroundColor = "#F0F9FF"; // Fondo celeste sutil
+        }
+    </script>
+</body>
+</html>
