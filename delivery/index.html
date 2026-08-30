@@ -143,7 +143,7 @@
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     
     <script>
-        // --- 1. Lógica del Modo Oscuro (Tomada de tu diseño) ---
+        // --- 1. Lógica del Modo Oscuro ---
         const themeToggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
         const savedTheme = localStorage.getItem('theme');
@@ -167,7 +167,10 @@
         const map = L.map('map').setView([-32.3429, -65.0122], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+        // Variables para guardar datos en tiempo real
         const marcadores = {};
+        const estados = {}; 
+        let ultimasUbicaciones = {}; 
 
         // --- 3. Agenda de Repartidores ---
         const agenda = {
@@ -175,7 +178,7 @@
             "CM": { nombre: "Carlos (Bici)", telefono: "5491198765432" }
         };
 
-        // --- 4. Datos de Conexión MQTT (Completar con los tuyos) ---
+        // --- 4. Datos de Conexión MQTT ---
         const host = 'wss://6b1996ce3cb642b4b4291767de85d454.s1.eu.hivemq.cloud:8884/mqtt';
         const opciones = {
             username: 'sierraswebdelivery',
@@ -186,46 +189,82 @@
         const client = mqtt.connect(host, opciones);
 
         client.on('connect', () => {
-            console.log('Conectado al puente. Esperando GPS...');
-            client.subscribe('owntracks/+/+'); 
+            console.log('Conectado. Escuchando GPS y Estados...');
+            client.subscribe('owntracks/+/+'); // Escucha el GPS
+            client.subscribe('sierrasweb/estado/+'); // Escucha la botonera
         });
 
-        client.on('message', (topic, message) => {
-            const datos = JSON.parse(message.toString());
-            
-            if (datos._type === 'location') {
-                const idRepartidor = topic.split('/').pop(); 
-                const info = agenda[idRepartidor] || { nombre: `Repartidor ${idRepartidor}`, telefono: "" };
+        // --- 5. FUNCIÓN CENTRAL: Dibujar el marcador ---
+        function actualizarMarcador(id) {
+            const info = agenda[id] || { nombre: `Repartidor ${id}`, telefono: "" };
+            const datosGps = ultimasUbicaciones[id];
+            const estadoActual = estados[id] || 'disponible';
 
-                const fecha = new Date(datos.tst * 1000);
-                const horaFormateada = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (!datosGps) return; // Si no hay GPS todavía, no dibuja nada
 
-                // Se eliminaron las etiquetas bold estrictas para usar la fuente de tu diseño
-                let textoPopup = `
-                    <div style="text-align: center; font-family: var(--font-main);">
-                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;">${info.nombre}</div>
-                        <div style="color: var(--text-gray); font-size: 0.9rem;">🕒 Última vez: <strong>${horaFormateada} hs</strong></div>
-                        <div style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 12px;">🔋 Batería: ${datos.batt}%</div>
-                `;
+            // Si tocó "NO TRABAJANDO", borramos el marcador y salimos
+            if (estadoActual === 'no_trabajando') {
+                if (marcadores[id]) {
+                    map.removeLayer(marcadores[id]);
+                    delete marcadores[id];
+                }
+                return; 
+            }
 
-                if (info.telefono !== "") {
+            const fecha = new Date(datosGps.tst * 1000);
+            const horaFormateada = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            let textoPopup = `
+                <div style="text-align: center; font-family: var(--font-main);">
+                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;">${info.nombre}</div>
+                    <div style="color: var(--text-gray); font-size: 0.9rem;">🕒 Última vez: <strong>${horaFormateada} hs</strong></div>
+                    <div style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 12px;">🔋 Batería: ${datosGps.batt}%</div>
+            `;
+
+            if (info.telefono !== "") {
+                if (estadoActual === 'disponible') {
                     const mensajeWa = encodeURIComponent(`Hola ${info.nombre}, ¡tengo un pedido para retirar!`);
                     textoPopup += `
                         <a href="https://wa.me/${info.telefono}?text=${mensajeWa}" target="_blank" 
                            style="background: var(--wa-green); color: white; padding: 8px 15px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; width: 100%; box-sizing: border-box; transition: 0.3s;">
                            💬 Contactar
-                        </a>
-                    `;
+                        </a>`;
+                } else if (estadoActual === 'ocupado') {
+                    textoPopup += `
+                        <div style="background: #dc3545; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; display: inline-block; width: 100%; box-sizing: border-box;">
+                           🔴 En Viaje (Ocupado)
+                        </div>`;
                 }
-                
-                textoPopup += `</div>`;
+            }
+            
+            textoPopup += `</div>`;
 
-                if (marcadores[idRepartidor]) {
-                    marcadores[idRepartidor].setLatLng([datos.lat, datos.lon]);
-                    marcadores[idRepartidor].setPopupContent(textoPopup);
-                } else {
-                    marcadores[idRepartidor] = L.marker([datos.lat, datos.lon]).addTo(map).bindPopup(textoPopup);
+            if (marcadores[id]) {
+                marcadores[id].setLatLng([datosGps.lat, datosGps.lon]);
+                marcadores[id].setPopupContent(textoPopup);
+            } else {
+                marcadores[id] = L.marker([datosGps.lat, datosGps.lon]).addTo(map).bindPopup(textoPopup);
+            }
+        }
+
+        // --- 6. RECIBIR MENSAJES (GPS O ESTADOS) ---
+        client.on('message', (topic, message) => {
+            const datos = JSON.parse(message.toString());
+            
+            // Si el mensaje es del GPS de OwnTracks
+            if (topic.startsWith('owntracks/')) {
+                if (datos._type === 'location') {
+                    const idRepartidor = topic.split('/').pop().toUpperCase(); 
+                    ultimasUbicaciones[idRepartidor] = datos;
+                    actualizarMarcador(idRepartidor);
                 }
+            }
+            
+            // Si el mensaje viene de la Botonera de Estados
+            if (topic.startsWith('sierrasweb/estado/')) {
+                const idRepartidor = topic.split('/').pop().toUpperCase();
+                estados[idRepartidor] = datos.estado;
+                actualizarMarcador(idRepartidor);
             }
         });
     </script>
