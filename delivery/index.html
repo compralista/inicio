@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     
     <style>
-        /* Variables Modo Claro (De tu diseño original) */
+        /* Variables Modo Claro */
         :root {
             --primary-color: #0284C7; 
             --primary-dark: #0369A1;
@@ -42,13 +42,13 @@
             font-family: var(--font-main); 
             color: var(--text-dark); 
             background-color: var(--bg-light); 
-            overflow: hidden; /* Evita scroll en el panel del mapa */
+            overflow: hidden; 
             transition: background-color var(--transition-speed), color var(--transition-speed); 
         }
         
         .container { width: 90%; max-width: 1200px; margin: 0 auto; }
 
-        /* --- Navegación (De tu diseño original) --- */
+        /* --- Navegación --- */
         .navbar {
             position: fixed; width: 100%; top: 0; background-color: var(--nav-bg);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -77,42 +77,88 @@
         [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
         [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
 
-        /* --- Configuración del Mapa --- */
-        #map { 
-            width: 100vw; 
-            height: calc(100vh - 80px); /* Resta la altura del menú */
-            margin-top: 80px; /* Deja espacio para el menú */
-            z-index: 1;
+        /* --- LAYOUT PRINCIPAL (MAPA + PANEL) --- */
+        .main-layout {
+            display: flex;
+            width: 100vw;
+            height: calc(100vh - 80px);
+            margin-top: 80px;
         }
 
-        /* Oscurecer el mapa en Modo Oscuro */
-        [data-theme="dark"] .leaflet-layer {
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-        }
-
-        /* Estilizar Popups para que coincidan con tu tema */
-        .leaflet-popup-content-wrapper {
+        /* --- PANEL LATERAL --- */
+        .sidebar {
+            width: 320px;
             background-color: var(--white);
-            color: var(--text-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: var(--shadow-sm);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: all var(--transition-speed);
         }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-box {
+            display: flex; justify-content: space-between;
+            background: var(--bg-light); padding: 12px 15px;
+            border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);
+        }
+        .stat { text-align: center; }
+        .stat span { display: block; font-size: 1.2rem; font-weight: 800; color: var(--text-dark); }
+        .stat small { font-size: 0.75rem; color: var(--text-gray); font-weight: 600; text-transform: uppercase; }
+
+        .filter-group { display: flex; gap: 8px; }
+        .btn-filter {
+            flex: 1; padding: 8px; border: 1px solid var(--primary-color);
+            background: transparent; color: var(--primary-color);
+            border-radius: 8px; font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .btn-filter.active { background: var(--primary-color); color: #fff; }
+        .btn-filter:hover { background: var(--primary-light); }
+        .btn-filter.active:hover { background: var(--primary-dark); }
+
+        .sidebar-list {
+            flex: 1; overflow-y: auto; padding: 15px;
+        }
+
+        .rep-card {
+            background: var(--bg-light); border: 1px solid var(--border-color);
+            padding: 15px; border-radius: 12px; margin-bottom: 12px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .rep-card:hover { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        
+        .badge-disp { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        .badge-ocup { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+        [data-theme="dark"] .badge-disp { background: #14532d; color: #4ade80; }
+        [data-theme="dark"] .badge-ocup { background: #7f1d1d; color: #f87171; }
+
+        /* --- MAPA --- */
+        #map { flex: 1; height: 100%; z-index: 1; }
+        [data-theme="dark"] .leaflet-layer { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        .leaflet-popup-content-wrapper { background-color: var(--white); color: var(--text-dark); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm); }
         .leaflet-popup-tip { background-color: var(--white); border: 1px solid var(--border-color); }
 
+        /* Responsividad para móviles */
         @media (max-width: 768px) {
             .nav-links .hide-mobile { display: none; }
+            .main-layout { flex-direction: column-reverse; }
+            .sidebar { width: 100%; height: 45vh; border-right: none; border-top: 1px solid var(--border-color); }
+            #map { height: 55vh; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Tu Menú Sierras Web -->
     <nav class="navbar" id="navbar">
         <div class="container nav-container">
             <a href="#" class="logo">Sierras<span>Web</span></a>
             <ul class="nav-links">
-                <li class="hide-mobile"><a href="#">📍 Panel de Monitoreo en Vivo</a></li>
+                <li class="hide-mobile"><a href="#">📍 Panel de Monitoreo Logístico</a></li>
                 <li>
                     <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
                         <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -135,8 +181,28 @@
         </div>
     </nav>
 
-    <!-- Contenedor del Mapa -->
-    <div id="map"></div>
+    <div class="main-layout">
+        <!-- Panel Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="stats-box">
+                    <div class="stat"><span id="count-disp" style="color: #10B981;">0</span><small>Disponibles</small></div>
+                    <div class="stat"><span id="count-ocup" style="color: #EF4444;">0</span><small>Ocupados</small></div>
+                    <div class="stat"><span id="count-total">0</span><small>Activos</small></div>
+                </div>
+                <div class="filter-group">
+                    <button id="btn-todos" class="btn-filter active" onclick="setFiltro('todos')">Ver Todos</button>
+                    <button id="btn-disp" class="btn-filter" onclick="setFiltro('disponibles')">Solo Disponibles</button>
+                </div>
+            </div>
+            <div class="sidebar-list" id="lista-repartidores">
+                <p style="text-align:center; color: var(--text-gray); margin-top: 20px; font-size: 0.9rem;">Esperando conexión...</p>
+            </div>
+        </aside>
+
+        <!-- Mapa -->
+        <div id="map"></div>
+    </div>
 
     <!-- Librerías de Lógica -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -147,30 +213,25 @@
         const themeToggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
         const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             htmlElement.setAttribute('data-theme', 'dark');
         }
-
         themeToggleBtn.addEventListener('click', () => {
             if (htmlElement.getAttribute('data-theme') === 'dark') {
-                htmlElement.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
+                htmlElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light');
             } else {
-                htmlElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
+                htmlElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark');
             }
         });
 
         // --- 2. Lógica del Mapa (Merlo) ---
-        const map = L.map('map').setView([-32.3429, -65.0122], 12);
+        const map = L.map('map').setView([-32.3429, -65.0122], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // Variables para guardar datos en tiempo real
         const marcadores = {};
         const estados = {}; 
         let ultimasUbicaciones = {}; 
+        let filtroActivo = 'todos';
 
         // --- 3. Agenda de Repartidores ---
         const agenda = {
@@ -185,86 +246,139 @@
             password: 'NestorArias1070',
             clientId: 'web_' + Math.random().toString(16).substr(2, 8)
         };
-
         const client = mqtt.connect(host, opciones);
 
         client.on('connect', () => {
-            console.log('Conectado. Escuchando GPS y Estados...');
-            client.subscribe('owntracks/+/+'); // Escucha el GPS
-            client.subscribe('sierrasweb/estado/+'); // Escucha la botonera
+            client.subscribe('owntracks/+/+'); 
+            client.subscribe('sierrasweb/estado/+'); 
         });
 
-        // --- 5. FUNCIÓN CENTRAL: Dibujar el marcador ---
-        function actualizarMarcador(id) {
-            const info = agenda[id] || { nombre: `Repartidor ${id}`, telefono: "" };
-            const datosGps = ultimasUbicaciones[id];
-            const estadoActual = estados[id] || 'disponible';
+        // --- 5. FUNCIONES DE INTERFAZ ---
+        function setFiltro(tipo) {
+            filtroActivo = tipo;
+            document.getElementById('btn-todos').classList.toggle('active', tipo === 'todos');
+            document.getElementById('btn-disp').classList.toggle('active', tipo === 'disponibles');
+            procesarDashboard();
+        }
 
-            if (!datosGps) return; // Si no hay GPS todavía, no dibuja nada
-
-            // Si tocó "NO TRABAJANDO", borramos el marcador y salimos
-            if (estadoActual === 'no_trabajando') {
+        function enfocarRepartidor(id) {
+            const gps = ultimasUbicaciones[id];
+            if (gps) {
+                map.flyTo([gps.lat, gps.lon], 16, { animate: true, duration: 1 });
                 if (marcadores[id]) {
-                    map.removeLayer(marcadores[id]);
-                    delete marcadores[id];
+                    setTimeout(() => marcadores[id].openPopup(), 1000);
                 }
-                return; 
-            }
-
-            const fecha = new Date(datosGps.tst * 1000);
-            const horaFormateada = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            let textoPopup = `
-                <div style="text-align: center; font-family: var(--font-main);">
-                    <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;">${info.nombre}</div>
-                    <div style="color: var(--text-gray); font-size: 0.9rem;">🕒 Última vez: <strong>${horaFormateada} hs</strong></div>
-                    <div style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 12px;">🔋 Batería: ${datosGps.batt}%</div>
-            `;
-
-            if (info.telefono !== "") {
-                if (estadoActual === 'disponible') {
-                    const mensajeWa = encodeURIComponent(`Hola ${info.nombre}, ¡tengo un pedido para retirar!`);
-                    textoPopup += `
-                        <a href="https://wa.me/${info.telefono}?text=${mensajeWa}" target="_blank" 
-                           style="background: var(--wa-green); color: white; padding: 8px 15px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; width: 100%; box-sizing: border-box; transition: 0.3s;">
-                           💬 Contactar
-                        </a>`;
-                } else if (estadoActual === 'ocupado') {
-                    textoPopup += `
-                        <div style="background: #dc3545; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; display: inline-block; width: 100%; box-sizing: border-box;">
-                           🔴 En Viaje (Ocupado)
-                        </div>`;
-                }
-            }
-            
-            textoPopup += `</div>`;
-
-            if (marcadores[id]) {
-                marcadores[id].setLatLng([datosGps.lat, datosGps.lon]);
-                marcadores[id].setPopupContent(textoPopup);
-            } else {
-                marcadores[id] = L.marker([datosGps.lat, datosGps.lon]).addTo(map).bindPopup(textoPopup);
             }
         }
 
-        // --- 6. RECIBIR MENSAJES (GPS O ESTADOS) ---
+        // --- 6. MOTOR CENTRAL (Procesa Lista y Mapa al mismo tiempo) ---
+        function procesarDashboard() {
+            let activos = Object.keys(ultimasUbicaciones).filter(id => estados[id] !== 'no_trabajando');
+            
+            let countDisp = 0;
+            let countOcup = 0;
+            
+            // Ordenar: Disponibles primero
+            activos.sort((a, b) => {
+                const estA = estados[a] || 'disponible';
+                const estB = estados[b] || 'disponible';
+                if (estA === estB) return 0;
+                return estA === 'disponible' ? -1 : 1;
+            });
+
+            const listaDiv = document.getElementById('lista-repartidores');
+            listaDiv.innerHTML = '';
+
+            // Limpiar marcadores viejos/filtrados
+            Object.keys(marcadores).forEach(id => {
+                const est = estados[id] || 'disponible';
+                const ocultarPorFiltro = (filtroActivo === 'disponibles' && est !== 'disponible');
+                const esInactivo = (estados[id] === 'no_trabajando');
+                
+                if (ocultarPorFiltro || esInactivo) {
+                    map.removeLayer(marcadores[id]);
+                    delete marcadores[id];
+                }
+            });
+
+            activos.forEach(id => {
+                const est = estados[id] || 'disponible';
+                const gps = ultimasUbicaciones[id];
+                const info = agenda[id] || { nombre: `Repartidor ${id}`, telefono: "" };
+                
+                if (est === 'disponible') countDisp++;
+                if (est === 'ocupado') countOcup++;
+
+                const fecha = new Date(gps.tst * 1000);
+                const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const badgeClass = est === 'disponible' ? 'badge-disp' : 'badge-ocup';
+                const badgeText = est === 'disponible' ? 'Disponible' : 'Ocupado';
+
+                // 1. Armar tarjeta de la lista
+                listaDiv.innerHTML += `
+                    <div class="rep-card" onclick="enfocarRepartidor('${id}')">
+                        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <strong style="color: var(--text-dark); font-size: 1.05rem;">${info.nombre}</strong>
+                            <span class="${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-gray); font-weight: 500;">
+                            🕒 ${hora} hs &nbsp;|&nbsp; 🔋 Batería: ${gps.batt}%
+                        </div>
+                    </div>
+                `;
+
+                // 2. Dibujar/Actualizar Marcador si el filtro lo permite
+                if (filtroActivo === 'todos' || (filtroActivo === 'disponibles' && est === 'disponible')) {
+                    let popup = `
+                        <div style="text-align: center; font-family: var(--font-main);">
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;">${info.nombre}</div>
+                            <div style="color: var(--text-gray); font-size: 0.9rem;">🕒 ${hora} hs | 🔋 ${gps.batt}%</div>
+                            <div style="margin-top: 10px;">
+                    `;
+                    if (info.telefono !== "") {
+                        if (est === 'disponible') {
+                            const msj = encodeURIComponent(`Hola ${info.nombre}, ¡tengo un pedido!`);
+                            popup += `<a href="https://wa.me/${info.telefono}?text=${msj}" target="_blank" style="background: var(--wa-green); color: white; padding: 8px 15px; text-decoration: none; border-radius: 8px; font-weight: 600; display: block;">💬 Pedir Envío</a>`;
+                        } else {
+                            popup += `<div style="background: #dc3545; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600;">🔴 En Viaje</div>`;
+                        }
+                    }
+                    popup += `</div></div>`;
+
+                    if (marcadores[id]) {
+                        marcadores[id].setLatLng([gps.lat, gps.lon]).setPopupContent(popup);
+                    } else {
+                        marcadores[id] = L.marker([gps.lat, gps.lon]).addTo(map).bindPopup(popup);
+                    }
+                }
+            });
+
+            // Actualizar contadores
+            document.getElementById('count-disp').innerText = countDisp;
+            document.getElementById('count-ocup').innerText = countOcup;
+            document.getElementById('count-total').innerText = activos.length;
+
+            if (activos.length === 0) {
+                listaDiv.innerHTML = '<p style="text-align:center; color: var(--text-gray); margin-top: 20px; font-size: 0.9rem;">No hay repartidores conectados.</p>';
+            }
+        }
+
+        // --- 7. ESCUCHADOR DE MENSAJES MQTT ---
         client.on('message', (topic, message) => {
             const datos = JSON.parse(message.toString());
             
-            // Si el mensaje es del GPS de OwnTracks
             if (topic.startsWith('owntracks/')) {
                 if (datos._type === 'location') {
                     const idRepartidor = topic.split('/').pop().toUpperCase(); 
                     ultimasUbicaciones[idRepartidor] = datos;
-                    actualizarMarcador(idRepartidor);
+                    procesarDashboard();
                 }
             }
             
-            // Si el mensaje viene de la Botonera de Estados
             if (topic.startsWith('sierrasweb/estado/')) {
                 const idRepartidor = topic.split('/').pop().toUpperCase();
                 estados[idRepartidor] = datos.estado;
-                actualizarMarcador(idRepartidor);
+                procesarDashboard();
             }
         });
     </script>
