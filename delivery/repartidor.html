@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* Variables de diseño Sierras Web */
+        /* Variables de diseño Sierras Web (Modo Claro) */
         :root {
             --primary: #0284C7;
             --bg-light: #F8FAFC;
@@ -17,9 +17,20 @@
             --text-dark: #0F172A;
             --text-gray: #475569;
             --border: #E2E8F0;
-            --success: #10B981; /* Verde más moderno */
-            --danger: #EF4444;  /* Rojo más vibrante */
-            --dark: #334155;    /* Gris oscuro elegante */
+            --success: #10B981; 
+            --danger: #EF4444;  
+            --dark: #334155;    
+            --bg-status: #F0F9FF; /* Fondo para el aviso de estado */
+        }
+
+        /* Variables Modo Oscuro */
+        [data-theme="dark"] {
+            --bg-light: #0F172A;
+            --white: #1E293B;
+            --text-dark: #F8FAFC;
+            --text-gray: #94A3B8;
+            --border: #334155;
+            --bg-status: rgba(2, 132, 199, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -33,7 +44,26 @@
             justify-content: center; 
             min-height: 100vh; 
             padding: 20px; 
+            transition: background-color 0.4s, color 0.4s;
         }
+
+        /* --- Botón Dark Mode --- */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--white); border: 1px solid var(--border); cursor: pointer;
+            width: 42px; height: 42px; border-radius: 50%; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .theme-toggle:hover { border-color: var(--primary); }
+        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .moon-icon { opacity: 1; transform: translateY(0) rotate(0deg); color: var(--text-gray); }
+        .sun-icon { opacity: 0; transform: translateY(30px) rotate(45deg); color: #F59E0B; }
+        [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
+        [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
 
         /* Branding Sierras Web */
         .logo { 
@@ -56,6 +86,7 @@
             max-width: 380px; 
             text-align: center; 
             border: 1px solid var(--border); 
+            transition: background-color 0.4s, border-color 0.4s;
         }
         .card h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; color: var(--text-dark); }
         .card p { color: var(--text-gray); font-size: 0.95rem; margin-bottom: 25px; }
@@ -81,7 +112,7 @@
             box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1); 
             background: var(--white); 
         }
-        input::placeholder { color: #94A3B8; font-weight: 400; }
+        input::placeholder { color: var(--text-gray); font-weight: 400; opacity: 0.6; }
 
         /* Botones de Estado */
         .btn { 
@@ -111,6 +142,8 @@
         
         .btn-off { background: var(--dark); }
         .btn-off:hover { background: #1E293B; }
+        [data-theme="dark"] .btn-off { background: #475569; }
+        [data-theme="dark"] .btn-off:hover { background: #334155; }
 
         /* Estado de Conexión */
         #status { 
@@ -132,6 +165,24 @@
 </head>
 <body>
 
+    <!-- Botón para alternar tema -->
+    <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+    </button>
+
     <a href="#" class="logo">Sierras<span>Web</span></a>
 
     <div class="card">
@@ -149,6 +200,20 @@
 
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script>
+        // --- Lógica del Modo Oscuro ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.setAttribute('data-theme', 'dark');
+        }
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                htmlElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark');
+            }
+        });
+
         // --- TUS DATOS DE HIVEMQ ---
         const host = 'wss://6b1996ce3cb642b4b4291767de85d454.s1.eu.hivemq.cloud:8884/mqtt';
         const opciones = {
@@ -164,6 +229,7 @@
             statusDiv.innerHTML = "✅ Sistema en línea";
             statusDiv.style.color = "var(--success)";
             statusDiv.style.borderColor = "var(--success)";
+            statusDiv.style.backgroundColor = "transparent";
         });
 
         // Recuperar el ID guardado
@@ -191,7 +257,7 @@
             statusDiv.innerHTML = `📡 Estado: <b>${estado.toUpperCase()}</b>`;
             statusDiv.style.color = "var(--primary)";
             statusDiv.style.borderColor = "var(--primary)";
-            statusDiv.style.backgroundColor = "#F0F9FF"; // Fondo celeste sutil
+            statusDiv.style.backgroundColor = "var(--bg-status)"; 
         }
     </script>
 </body>
