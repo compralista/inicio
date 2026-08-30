@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierras Web | Panel de Repartidores en Vivo</title>
+    
+    <!-- Fuentes y Librerías -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <style>
+        /* Variables Modo Claro (De tu diseño original) */
+        :root {
+            --primary-color: #0284C7; 
+            --primary-dark: #0369A1;
+            --text-dark: #0F172A;
+            --text-gray: #475569;
+            --bg-light: #F8FAFC;
+            --white: #FFFFFF;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --border-color: #E2E8F0;
+            --wa-green: #25D366;
+            --font-main: 'Inter', sans-serif;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.4s;
+        }
+
+        /* Variables Modo Oscuro */
+        [data-theme="dark"] {
+            --text-dark: #F8FAFC;
+            --text-gray: #94A3B8;
+            --bg-light: #0F172A;
+            --white: #1E293B;
+            --nav-bg: rgba(30, 41, 59, 0.85);
+            --border-color: #334155;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: var(--font-main); 
+            color: var(--text-dark); 
+            background-color: var(--bg-light); 
+            overflow: hidden; /* Evita scroll en el panel del mapa */
+            transition: background-color var(--transition-speed), color var(--transition-speed); 
+        }
+        
+        .container { width: 90%; max-width: 1200px; margin: 0 auto; }
+
+        /* --- Navegación (De tu diseño original) --- */
+        .navbar {
+            position: fixed; width: 100%; top: 0; background-color: var(--nav-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 1000; border-bottom: 1px solid var(--border-color); 
+            transition: all var(--transition-speed);
+        }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 80px; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); text-decoration: none; letter-spacing: -0.5px; transition: transform 0.3s; }
+        .logo span { color: var(--primary-color); }
+        
+        .nav-links { display: flex; list-style: none; gap: 2rem; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-gray); font-weight: 600; font-size: 0.95rem; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--primary-color); }
+
+        /* --- Botón Dark Mode --- */
+        .theme-toggle {
+            background: var(--bg-light); border: 1px solid var(--border-color); cursor: pointer;
+            width: 42px; height: 42px; border-radius: 50%; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .theme-toggle:hover { background-color: var(--border-color); }
+        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .moon-icon { opacity: 1; transform: translateY(0) rotate(0deg); color: var(--text-gray); }
+        .sun-icon { opacity: 0; transform: translateY(30px) rotate(45deg); color: #F59E0B; }
+        [data-theme="dark"] .moon-icon { opacity: 0; transform: translateY(-30px) rotate(-45deg); }
+        [data-theme="dark"] .sun-icon { opacity: 1; transform: translateY(0) rotate(0deg); }
+
+        /* --- Configuración del Mapa --- */
+        #map { 
+            width: 100vw; 
+            height: calc(100vh - 80px); /* Resta la altura del menú */
+            margin-top: 80px; /* Deja espacio para el menú */
+            z-index: 1;
+        }
+
+        /* Oscurecer el mapa en Modo Oscuro */
+        [data-theme="dark"] .leaflet-layer {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        /* Estilizar Popups para que coincidan con tu tema */
+        .leaflet-popup-content-wrapper {
+            background-color: var(--white);
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .leaflet-popup-tip { background-color: var(--white); border: 1px solid var(--border-color); }
+
+        @media (max-width: 768px) {
+            .nav-links .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tu Menú Sierras Web -->
+    <nav class="navbar" id="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">Sierras<span>Web</span></a>
+            <ul class="nav-links">
+                <li class="hide-mobile"><a href="#">📍 Panel de Monitoreo en Vivo</a></li>
+                <li>
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Cambiar Tema">
+                        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contenedor del Mapa -->
+    <div id="map"></div>
+
+    <!-- Librerías de Lógica -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    
+    <script>
+        // --- 1. Lógica del Modo Oscuro (Tomada de tu diseño) ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            htmlElement.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // --- 2. Lógica del Mapa (Merlo) ---
+        const map = L.map('map').setView([-32.3429, -65.0122], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const marcadores = {};
+
+        // --- 3. Agenda de Repartidores ---
+        const agenda = {
+            "RA": { nombre: "Rodrigo Arias (Moto)", telefono: "5492664212722" },
+            "CM": { nombre: "Carlos (Bici)", telefono: "5491198765432" }
+        };
+
+        // --- 4. Datos de Conexión MQTT (Completar con los tuyos) ---
+        const host = 'wss://6b1996ce3cb642b4b4291767de85d454.s1.eu.hivemq.cloud:8884/mqtt';
+        const opciones = {
+            username: 'sierraswebdelivery',
+            password: 'NestorArias1070',
+            clientId: 'web_' + Math.random().toString(16).substr(2, 8)
+        };
+
+        const client = mqtt.connect(host, opciones);
+
+        client.on('connect', () => {
+            console.log('Conectado al puente. Esperando GPS...');
+            client.subscribe('owntracks/+/+'); 
+        });
+
+        client.on('message', (topic, message) => {
+            const datos = JSON.parse(message.toString());
+            
+            if (datos._type === 'location') {
+                const idRepartidor = topic.split('/').pop(); 
+                const info = agenda[idRepartidor] || { nombre: `Repartidor ${idRepartidor}`, telefono: "" };
+
+                const fecha = new Date(datos.tst * 1000);
+                const horaFormateada = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // Se eliminaron las etiquetas bold estrictas para usar la fuente de tu diseño
+                let textoPopup = `
+                    <div style="text-align: center; font-family: var(--font-main);">
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;">${info.nombre}</div>
+                        <div style="color: var(--text-gray); font-size: 0.9rem;">🕒 Última vez: <strong>${horaFormateada} hs</strong></div>
+                        <div style="color: var(--text-gray); font-size: 0.85rem; margin-bottom: 12px;">🔋 Batería: ${datos.batt}%</div>
+                `;
+
+                if (info.telefono !== "") {
+                    const mensajeWa = encodeURIComponent(`Hola ${info.nombre}, ¡tengo un pedido para retirar!`);
+                    textoPopup += `
+                        <a href="https://wa.me/${info.telefono}?text=${mensajeWa}" target="_blank" 
+                           style="background: var(--wa-green); color: white; padding: 8px 15px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; width: 100%; box-sizing: border-box; transition: 0.3s;">
+                           💬 Contactar
+                        </a>
+                    `;
+                }
+                
+                textoPopup += `</div>`;
+
+                if (marcadores[idRepartidor]) {
+                    marcadores[idRepartidor].setLatLng([datos.lat, datos.lon]);
+                    marcadores[idRepartidor].setPopupContent(textoPopup);
+                } else {
+                    marcadores[idRepartidor] = L.marker([datos.lat, datos.lon]).addTo(map).bindPopup(textoPopup);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
