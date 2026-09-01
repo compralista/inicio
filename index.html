@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compra Lista | Menú Principal</title>
     
+    <!-- Enlace al Manifest para la PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0284C7">
+    
+    <!-- Soporte Nativo para iOS y Splash Screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icono-192.png">
+    <meta name="apple-mobile-web-app-title" content="Compra Lista">
+    
     <!-- Fuentes y Animaciones del Index 23 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -122,7 +132,7 @@
         .section-header { text-align: center; margin-bottom: 50px; }
         .section-header h2 { font-size: 2.2rem; font-weight: 800; color: var(--text-dark); }
 
-        /* --- Menú de Ciudades (Estilo Cards Sierras Web) --- */
+        /* --- Menú de Ciudades --- */
         .cities-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
@@ -164,18 +174,74 @@
         }
         
         .city-card:hover::before { transform: scale(1.1) rotate(5deg); }
-        
         .city-name { font-size: 1.25rem; font-weight: 600; flex-grow: 1; }
-        
-        .city-arrow { 
-            color: var(--primary-color); 
-            opacity: 0; 
-            transform: translateX(-15px); 
-            transition: all 0.3s ease; 
-            font-weight: bold; 
-            font-size: 1.2rem;
-        }
+        .city-arrow { color: var(--primary-color); opacity: 0; transform: translateX(-15px); transition: all 0.3s ease; font-weight: bold; font-size: 1.2rem; }
         .city-card:hover .city-arrow { opacity: 1; transform: translateX(0); }
+
+        /* --- Banner de Instalación PWA (NUEVO) --- */
+        .install-banner {
+            position: fixed;
+            bottom: -150px; /* Oculto por defecto */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 450px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            z-index: 2000;
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .install-banner.show {
+            bottom: 20px;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .install-content { display: flex; align-items: center; gap: 12px; }
+        .install-icon { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; }
+        .install-text { display: flex; flex-direction: column; }
+        .install-text strong { font-size: 1rem; color: var(--text-dark); line-height: 1.2; }
+        .install-text span { font-size: 0.8rem; color: var(--text-gray); }
+        
+        .install-actions { display: flex; align-items: center; gap: 8px; }
+        .install-btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .install-btn:hover { background-color: var(--primary-dark); }
+        
+        .close-install-btn {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .close-install-btn:hover { background: var(--border-color); }
+
+        /* Ocultar en escritorio para mejorar la experiencia */
+        @media (min-width: 769px) {
+            .install-banner { display: none !important; }
+        }
 
         /* --- Footer --- */
         footer { padding: 50px 0; text-align: center; color: var(--text-gray); background-color: var(--bg-light); border-top: 1px solid var(--border-color); transition: all var(--transition-speed); }
@@ -238,33 +304,61 @@
                 
                 <div class="cities-grid">
                     <a href="merlo.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Merlo</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Merlo</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                     <a href="carpinteria.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Carpintería</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Carpintería</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                     <a href="losmolles.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Los Molles</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Los Molles</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                     <a href="cortaderas.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Cortaderas</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Cortaderas</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                     <a href="villalarca.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Villa Larca</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Villa Larca</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                     <a href="papagayos.html" class="city-card" data-aos="fade-up" data-aos-delay="150">
-    <span class="city-name">Papagayos</span>
-    <span class="city-arrow">➜</span>
-</a>
+                        <span class="city-name">Papagayos</span>
+                        <span class="city-arrow">➜</span>
+                    </a>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- BANNER PWA -->
+    <div id="install-banner" class="install-banner">
+        <div class="install-content">
+            <img src="https://i.postimg.cc/kXsXjRvD/logo.png" alt="Icono" class="install-icon">
+            <div class="install-text">
+                <strong>Compra Lista</strong>
+                <span>Instalar aplicación web</span>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button id="install-btn" class="install-btn">Instalar</button>
+            <button id="close-install-banner" class="close-install-btn" aria-label="Cerrar">✕</button>
+        </div>
+    </div> <!-- CORRECCIÓN APLICADA AQUÍ -->
+
+    <!-- BANNER DE ACTUALIZACIÓN -->
+    <div id="update-banner" class="install-banner" style="background: var(--text-dark); border-color: var(--text-dark);">
+        <div class="install-content">
+            <div class="install-text">
+                <strong style="color: var(--bg-light);">Nueva versión disponible</strong>
+                <span style="color: var(--text-gray);">Actualizá para ver los últimos cambios.</span>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button id="update-btn" class="install-btn" style="background-color: #F59E0B; color: #0F172A;">Actualizar</button>
+        </div>
+    </div>
 
     <!-- Footer minimalista -->
     <footer>
@@ -293,7 +387,6 @@
         // Lógica del Modo Oscuro
         const themeToggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
-
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -310,6 +403,101 @@
                 htmlElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
             }
+        });
+
+        // ==========================================
+        // LÓGICA DE INSTALACIÓN PWA
+        // ==========================================
+        let deferredPrompt;
+        const installBanner = document.getElementById('install-banner');
+        const installBtn = document.getElementById('install-btn');
+        const closeInstallBtn = document.getElementById('close-install-banner');
+
+       // 1. Registro del Service Worker y Detección de Actualizaciones
+        let newWorker;
+        const updateBanner = document.getElementById('update-banner');
+        const updateBtn = document.getElementById('update-btn');
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => {
+                        console.log('SW registrado con éxito:', reg.scope);
+                        
+                        // Detectar si hay una nueva versión del SW instalándose
+                        reg.addEventListener('updatefound', () => {
+                            newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                // Si se instaló uno nuevo y ya había uno viejo controlando la página
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    updateBanner.classList.add('show');
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.warn('Error al registrar SW:', err));
+            });
+
+            // Escuchar cuando el SW toma el control para recargar la página
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    window.location.reload();
+                    refreshing = true;
+                }
+            });
+        }
+
+        // Si el usuario hace clic en "Actualizar", le avisamos al SW que se active
+        if (updateBtn) {
+            updateBtn.addEventListener('click', () => {
+                if (newWorker) {
+                    newWorker.postMessage({ action: 'skipWaiting' });
+                }
+            });
+        }
+
+        // 2. Capturar el evento de instalación
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que el navegador muestre su propio prompt genérico
+            e.preventDefault();
+            // Guardar el evento para dispararlo cuando el usuario haga clic
+            deferredPrompt = e;
+            // Mostrar nuestro banner personalizado con una pequeña demora para que sea más natural
+            setTimeout(() => {
+                installBanner.classList.add('show');
+            }, 1500); 
+        });
+
+        // 3. Manejar el clic en "Instalar"
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Mostrar el prompt nativo del sistema
+                deferredPrompt.prompt();
+                // Esperar la decisión del usuario
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('El usuario aceptó instalar la PWA');
+                } else {
+                    console.log('El usuario rechazó instalar la PWA');
+                }
+                // Limpiar la variable y ocultar el banner
+                deferredPrompt = null;
+                installBanner.classList.remove('show');
+            }
+        });
+
+        // 4. Manejar el clic en la "X" (Cerrar banner)
+        closeInstallBtn.addEventListener('click', () => {
+            installBanner.classList.remove('show');
+        });
+
+        // 5. Detectar cuando la instalación se completó
+        window.addEventListener('appinstalled', () => {
+            // Limpiar y ocultar si la app fue instalada exitosamente
+            installBanner.classList.remove('show');
+            deferredPrompt = null;
+            console.log('Aplicación instalada correctamente.');
         });
     </script>
 </body>
