@@ -1,4 +1,4 @@
-// Aumentá este número (v3, v4, etc.) cada vez que subas cambios importantes
+// Aumentá este número (v3, v4, etc.) cada vez que subas cambios importantess
 const CACHE_NAME = 'compralista-v2'; 
 
 const STATIC_ASSETS = [
